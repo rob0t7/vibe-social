@@ -1,11 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs').promises;
-const path = require('path');
+import express from 'express';
+import cors from 'cors';
+import { promises as fs } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'database.json');
+const DB_FILE = join(__dirname, 'database.json');
 
 // Middleware
 app.use(cors());
@@ -336,7 +340,7 @@ app.get('/api/user/:userId/votes', async (req, res) => {
 
 // Serve the main HTML file
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(join(__dirname, 'index.html'));
 });
 
 // Start server
