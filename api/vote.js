@@ -1,11 +1,12 @@
-import { getDatabase, updateDatabase } from '../../../lib/database.js';
+import { getDatabase, updateDatabase } from './database.js';
 
 export default function handler(req, res) {
-    // Enable CORS
+    // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
         res.status(200).end();
         return;
@@ -13,19 +14,19 @@ export default function handler(req, res) {
 
     if (req.method === 'POST') {
         try {
-            const { id } = req.query;
-            const suggestionId = parseInt(id);
-            const { userId } = req.body;
+            const { suggestionId, userId } = req.body;
             
-            if (!userId) {
+            // Validate input
+            if (!suggestionId || !userId) {
                 return res.status(400).json({
                     success: false,
-                    error: 'User ID required'
+                    error: 'Missing required fields: suggestionId, userId'
                 });
             }
             
             const db = getDatabase();
-            const userVotes = db.userVotes || {};
+            const suggestions = [...(db.suggestions || [])];
+            const userVotes = { ...(db.userVotes || {}) };
             
             // Check if user already voted for this suggestion
             if (userVotes[userId] && userVotes[userId].includes(suggestionId)) {
@@ -35,10 +36,9 @@ export default function handler(req, res) {
                 });
             }
             
-            // Find and update the suggestion
-            const suggestions = [...(db.suggestions || [])];
-            const suggestion = suggestions.find(s => s.id === suggestionId);
-            if (!suggestion) {
+            // Find the suggestion
+            const suggestionIndex = suggestions.findIndex(s => s.id === suggestionId);
+            if (suggestionIndex === -1) {
                 return res.status(404).json({
                     success: false,
                     error: 'Suggestion not found'
@@ -46,7 +46,7 @@ export default function handler(req, res) {
             }
             
             // Update vote count
-            suggestion.votes = (suggestion.votes || 0) + 1;
+            suggestions[suggestionIndex].votes = (suggestions[suggestionIndex].votes || 0) + 1;
             
             // Track user vote
             if (!userVotes[userId]) {
@@ -54,19 +54,22 @@ export default function handler(req, res) {
             }
             userVotes[userId].push(suggestionId);
             
+            // Update database
             updateDatabase({ suggestions, userVotes });
             
-            res.json({
+            res.status(200).json({
                 success: true,
-                suggestion
+                suggestion: suggestions[suggestionIndex]
             });
         } catch (error) {
+            console.error('Error processing vote:', error);
             res.status(500).json({
                 success: false,
-                error: 'Failed to vote for suggestion'
+                error: 'Failed to process vote'
             });
         }
-    } else {
+    }
+    else {
         res.status(405).json({
             success: false,
             error: 'Method not allowed'

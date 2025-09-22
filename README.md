@@ -68,9 +68,9 @@ The app uses a JSON file (`database.json`) for persistent storage with the follo
 ## Development
 
 The app consists of:
-- `server.js` - Express backend with API endpoints (for local development)
+- `server.js` - Express backend (for local development)
 - `api/` - Vercel serverless functions
-- `lib/database.js` - In-memory database for Vercel
+- `api/database.js` - In-memory database for serverless
 - `index.html` - Frontend with embedded CSS and JavaScript
 - `vercel.json` - Vercel deployment configuration
 - `package.json` - Node.js dependencies
@@ -82,28 +82,32 @@ npm install
 npm start
 ```
 
-## Vercel Development
+The app will be available at http://localhost:3000
+
+## Vercel Development & Deployment
+
+### Local Vercel Development
 
 ```bash
 npm install
 npm run vercel-dev
 ```
 
-## Vercel Deployment
+### Deploy to Vercel
 
-### Option 1: Using Vercel CLI
+#### Option 1: Using Vercel CLI
 
-1. **Install Vercel CLI:**
+1. **Install Vercel CLI globally:**
    ```bash
    npm install -g vercel
    ```
 
-2. **Deploy to Vercel:**
+2. **Deploy:**
    ```bash
    npm run deploy
    ```
 
-### Option 2: Using Git Integration
+#### Option 2: GitHub Integration
 
 1. **Push to GitHub:**
    ```bash
@@ -115,28 +119,32 @@ npm run vercel-dev
    ```
 
 2. **Connect to Vercel:**
-   - Go to [vercel.com](https://vercel.com)
+   - Visit [vercel.com](https://vercel.com)
    - Import your GitHub repository
-   - Vercel will automatically deploy on every push
+   - Deploy automatically on every push
 
-### Important Notes for Vercel
+### API Endpoints (Vercel)
 
-- **Database Persistence**: Vercel uses serverless functions with read-only filesystem
-- Data is stored in-memory and will reset on each deployment
-- For production, consider integrating with:
-  - Vercel KV (Redis)
-  - PlanetScale (MySQL)
-  - Supabase (PostgreSQL)
-  - MongoDB Atlas
+- `GET /api/suggestions` - Get all suggestions
+- `POST /api/suggestions` - Add a new suggestion  
+- `POST /api/vote` - Vote for a suggestion
+- `GET /api/user-votes?userId=XXX` - Get user's votes
 
-### Environment Variables
+### Important Notes
 
-No environment variables are required for the basic deployment.
+⚠️ **Data Persistence**: Vercel serverless functions use in-memory storage. Data persists during runtime but resets on each deployment.
+
+For production with persistent data, consider:
+- **Vercel KV** (Redis-compatible)
+- **PlanetScale** (MySQL)
+- **Supabase** (PostgreSQL)  
+- **MongoDB Atlas**
+- **Upstash Redis**
 
 ## Production Deployment
 
 For production deployment, consider:
-- Using a proper database (PostgreSQL, MongoDB, Redis)
+- Using a persistent database (see options above)
 - Implementing real user authentication
 - Adding rate limiting for API endpoints
 - Using environment variables for configuration

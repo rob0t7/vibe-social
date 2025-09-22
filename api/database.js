@@ -1,4 +1,5 @@
-// Simple in-memory database for Vercel (since filesystem is read-only)
+// In-memory database for Vercel serverless functions
+// Note: Data will reset on each deployment but persist during runtime
 let database = {
     suggestions: [
         {
@@ -162,7 +163,7 @@ export function getDatabase() {
     return database;
 }
 
-export function updateDatabase(newData) {
-    database = { ...database, ...newData };
+export function updateDatabase(updates) {
+    database = { ...database, ...updates };
     return database;
 }

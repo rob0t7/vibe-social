@@ -1,11 +1,12 @@
-import { getDatabase } from '../../../lib/database.js';
+import { getDatabase } from './database.js';
 
 export default function handler(req, res) {
-    // Enable CORS
+    // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
         res.status(200).end();
         return;
@@ -14,19 +15,30 @@ export default function handler(req, res) {
     if (req.method === 'GET') {
         try {
             const { userId } = req.query;
-            const db = getDatabase();
             
-            res.json({
+            if (!userId) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing required parameter: userId'
+                });
+            }
+            
+            const db = getDatabase();
+            const userVotes = db.userVotes || {};
+            
+            res.status(200).json({
                 success: true,
-                votes: db.userVotes[userId] || []
+                votes: userVotes[userId] || []
             });
         } catch (error) {
+            console.error('Error fetching user votes:', error);
             res.status(500).json({
                 success: false,
                 error: 'Failed to fetch user votes'
             });
         }
-    } else {
+    }
+    else {
         res.status(405).json({
             success: false,
             error: 'Method not allowed'

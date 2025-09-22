@@ -493,12 +493,12 @@
                 if (this.hasUserVoted(suggestionId)) return;
 
                 try {
-                    const response = await fetch(`${this.API_BASE}/api/suggestions/${suggestionId}/vote`, {
+                    const response = await fetch(`${this.API_BASE}/api/vote`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ userId: this.userId })
+                        body: JSON.stringify({ suggestionId, userId: this.userId })
                     });
 
                     const result = await response.json();
@@ -550,7 +550,7 @@
 
             async loadUserVotes() {
                 try {
-                    const response = await fetch(`${this.API_BASE}/api/user/${this.userId}/votes`);
+                    const response = await fetch(`${this.API_BASE}/api/user-votes?userId=${this.userId}`);
                     const result = await response.json();
                     
                     if (result.success) {
