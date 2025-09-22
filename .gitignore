@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Vercel
+.vercel
+
+# Database (for local development)
+database.json
+
+# System files
+.DS_Store
+*.log
+
+# IDE
+.vscode/
+.idea/

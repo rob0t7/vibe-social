@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETLS Vegas - Place Suggestions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .suggestion-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .suggestions-list {
+            margin-top: 30px;
+        }
+
+        .suggestions-list h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .suggestion-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .suggestion-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .suggestion-category {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .suggestion-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .no-suggestions {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .leaderboard {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .leaderboard h2 {
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .leaderboard-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: scale(1.02);
+        }
+
+        .leaderboard-rank {
+            font-size: 1.5em;
+            font-weight: bold;
+            width: 40px;
+            text-align: center;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+            margin: 0 15px;
+        }
+
+        .leaderboard-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .leaderboard-category {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .leaderboard-votes {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .vote-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+            margin-left: 10px;
+        }
+
+        .vote-button:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        .vote-button.voted {
+            background: #48bb78;
+        }
+
+        .suggestion-votes {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .vote-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .suggestion-form {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 ETLS Vegas Guide 🎲</h1>
+            <p>Share your favorite Las Vegas spots with fellow conference attendees!</p>
+        </div>
+        
+        <div class="content">
+            <div class="leaderboard" id="leaderboard">
+                <h2>🏆 Top Vegas Spots</h2>
+                <div id="leaderboardList">
+                    <div class="no-suggestions">Vote for suggestions to see the leaderboard! 🌟</div>
+                </div>
+            </div>
+            
+            <form class="suggestion-form" id="suggestionForm">
+                <h2 style="margin-bottom: 20px; color: #333;">Suggest a Place</h2>
+                
+                <div class="form-group">
+                    <label for="placeName">Place Name *</label>
+                    <input type="text" id="placeName" name="placeName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Choose a category...</option>
+                        <option value="restaurant">🍽️ Restaurant</option>
+                        <option value="bar">🍸 Bar/Lounge</option>
+                        <option value="show">🎭 Show/Entertainment</option>
+                        <option value="attraction">🎢 Attraction</option>
+                        <option value="shopping">🛍️ Shopping</option>
+                        <option value="coffee">☕ Coffee Shop</option>
+                        <option value="other">🌟 Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" placeholder="Tell us why this place is worth visiting..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="yourName">Your Name</label>
+                    <input type="text" id="yourName" name="yourName" placeholder="Optional - let others know who recommended this">
+                </div>
+                
+                <button type="submit" class="submit-btn">Add Suggestion 🚀</button>
+            </form>
+            
+            <div class="suggestions-list">
+                <h2>Community Suggestions</h2>
+                <div id="suggestionsList">
+                    <div class="no-suggestions">
+                        No suggestions yet. Be the first to share a great Vegas spot! 🌟
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VegasSuggestions {
+            constructor() {
+                this.suggestions = [];
+                this.userVotes = new Set();
+                this.userId = this.getUserId();
+                this.API_BASE = window.location.origin;
+                this.initializeApp();
+            }
+
+            async initializeApp() {
+                await this.loadSuggestions();
+                await this.loadUserVotes();
+                this.renderLeaderboard();
+                this.renderSuggestions();
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                const form = document.getElementById('suggestionForm');
+                form.addEventListener('submit', (e) => this.handleSubmit(e));
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const suggestionData = {
+                    placeName: formData.get('placeName'),
+                    category: formData.get('category'),
+                    description: formData.get('description'),
+                    yourName: formData.get('yourName') || 'Anonymous'
+                };
+
+                await this.addSuggestion(suggestionData);
+                e.target.reset();
+                
+                // Show success feedback
+                this.showSuccessMessage();
+            }
+
+            async addSuggestion(suggestionData) {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/suggestions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(suggestionData)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        await this.loadSuggestions();
+                        this.renderLeaderboard();
+                        this.renderSuggestions();
+                    } else {
+                        alert('Error adding suggestion: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error adding suggestion:', error);
+                    alert('Failed to add suggestion. Please try again.');
+                }
+            }
+
+            renderSuggestions() {
+                const container = document.getElementById('suggestionsList');
+                
+                if (this.suggestions.length === 0) {
+                    container.innerHTML = '<div class="no-suggestions">No suggestions yet. Be the first to share a great Vegas spot! 🌟</div>';
+                    return;
+                }
+
+                container.innerHTML = this.suggestions.map(suggestion => `
+                    <div class="suggestion-item">
+                        <div class="suggestion-header">
+                            <div class="suggestion-name">${this.escapeHtml(suggestion.placeName)}</div>
+                            <div class="suggestion-category">${this.getCategoryIcon(suggestion.category)} ${this.getCategoryName(suggestion.category)}</div>
+                        </div>
+                        <div class="suggestion-description">${this.escapeHtml(suggestion.description)}</div>
+                        <div class="suggestion-meta">
+                            <span>👤 Suggested by ${this.escapeHtml(suggestion.yourName)}</span>
+                            <span>📅 ${suggestion.timestamp}</span>
+                        </div>
+                        <div class="suggestion-votes">
+                            <span class="vote-count">👍 ${suggestion.votes || 0} votes</span>
+                            <button class="vote-button ${this.hasUserVoted(suggestion.id) ? 'voted' : ''}" 
+                                    onclick="vegasApp.voteForSuggestion(${suggestion.id})"
+                                    ${this.hasUserVoted(suggestion.id) ? 'disabled' : ''}>
+                                ${this.hasUserVoted(suggestion.id) ? '✅ Voted' : '👍 Vote'}
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            getCategoryIcon(category) {
+                const icons = {
+                    restaurant: '🍽️',
+                    bar: '🍸',
+                    show: '🎭',
+                    attraction: '🎢',
+                    shopping: '🛍️',
+                    coffee: '☕',
+                    other: '🌟'
+                };
+                return icons[category] || '🌟';
+            }
+
+            getCategoryName(category) {
+                const names = {
+                    restaurant: 'Restaurant',
+                    bar: 'Bar/Lounge',
+                    show: 'Show/Entertainment',
+                    attraction: 'Attraction',
+                    shopping: 'Shopping',
+                    coffee: 'Coffee Shop',
+                    other: 'Other'
+                };
+                return names[category] || 'Other';
+            }
+
+            renderLeaderboard() {
+                const container = document.getElementById('leaderboardList');
+                const topSuggestions = [...this.suggestions]
+                    .filter(s => (s.votes || 0) > 0)
+                    .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+                    .slice(0, 5);
+
+                if (topSuggestions.length === 0) {
+                    container.innerHTML = '<div class="no-suggestions">Vote for suggestions to see the leaderboard! 🌟</div>';
+                    return;
+                }
+
+                const rankEmojis = ['🥇', '🥈', '🥉', '🏅', '🏅'];
+                container.innerHTML = topSuggestions.map((suggestion, index) => `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">${rankEmojis[index]}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${this.escapeHtml(suggestion.placeName)}</div>
+                            <div class="leaderboard-category">${this.getCategoryIcon(suggestion.category)} ${this.getCategoryName(suggestion.category)}</div>
+                        </div>
+                        <div class="leaderboard-votes">${suggestion.votes || 0} votes</div>
+                    </div>
+                `).join('');
+            }
+
+            async voteForSuggestion(suggestionId) {
+                if (this.hasUserVoted(suggestionId)) return;
+
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/suggestions/${suggestionId}/vote`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ userId: this.userId })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.userVotes.add(suggestionId);
+                        await this.loadSuggestions();
+                        this.renderLeaderboard();
+                        this.renderSuggestions();
+                    } else {
+                        alert('Error voting: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error voting:', error);
+                    alert('Failed to vote. Please try again.');
+                }
+            }
+
+            hasUserVoted(suggestionId) {
+                return this.userVotes.has(suggestionId);
+            }
+
+            showSuccessMessage() {
+                const button = document.querySelector('.submit-btn');
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Added Successfully!';
+                button.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
+                }, 2000);
+            }
+
+            async loadSuggestions() {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/suggestions`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.suggestions = result.suggestions;
+                    } else {
+                        console.error('Error loading suggestions:', result.error);
+                    }
+                } catch (error) {
+                    console.error('Error loading suggestions:', error);
+                }
+            }
+
+            async loadUserVotes() {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/user/${this.userId}/votes`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.userVotes = new Set(result.votes);
+                    } else {
+                        console.error('Error loading user votes:', result.error);
+                    }
+                } catch (error) {
+                    console.error('Error loading user votes:', error);
+                }
+            }
+
+            getUserId() {
+                // Simple user identification - in production, use proper authentication
+                let userId = localStorage.getItem('vegasUserId');
+                if (!userId) {
+                    userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('vegasUserId', userId);
+                }
+                return userId;
+            }
+
+
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize the application when the DOM is loaded
+        let vegasApp;
+        document.addEventListener('DOMContentLoaded', () => {
+            vegasApp = new VegasSuggestions();
+        });
+    </script>
+</body>
+</html>
